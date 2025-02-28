@@ -23,7 +23,7 @@ This will bind `/configs/` in the container to a local volume on my machine name
 #### Docker Compose
 To use the pre-built image, simply clone this repository or copy `docker-compose.yml` and run `docker compose up -d`.
 
-To build a new image, clone this repository and run `docker compose up -f docker-compose.build.yml --build -d`
+To build a new image, clone this repository and run `docker compose -f docker-compose.build.yml up --build -d`
 
 ### Using a VNC Viewer
 
