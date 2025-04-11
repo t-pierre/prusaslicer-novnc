@@ -25,9 +25,5 @@ fi
 export SUPD_LOGLEVEL="${SUPD_LOGLEVEL:-TRACE}"
 export VGL_DISPLAY="${VGL_DISPLAY:-egl}"
 
-# Create .Xauthority file
-touch /home/slic3r/.Xauthority
-chown slic3r:slic3r /home/slic3r/.Xauthority
-
 # fix perms and launch supervisor with the above environment variables
 chown -R slic3r:slic3r /home/slic3r/ /configs/ /prints/ /dev/stdout && exec gosu slic3r supervisord -e $SUPD_LOGLEVEL

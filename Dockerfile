@@ -18,7 +18,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     # Packages needed to build PrusaSlicer from source.
     unzip build-essential autoconf cmake texinfo \
     libglu1-mesa-dev libgtk-3-dev libdbus-1-dev libwebkit2gtk-4.1-dev \
-    # Packages needed to support the AppImage changes. The libnvidia-egl-gbm1 package resolves an issue 
+    # Packages needed to support the AppImage changes. The libnvidia-egl-gbm1 package resolves an issue
     # where GPU acceleration resulted in blank windows being generated.
     libnvidia-egl-gbm1 \
     && mkdir -p /usr/share/desktop-directories \
@@ -45,22 +45,25 @@ RUN wget -qO /tmp/virtualgl_${VIRTUALGL_VERSION}_amd64.deb https://packagecloud.
     && dpkg -i /tmp/turbovnc_${TURBOVNC_VERSION}_amd64.deb \
     && rm -rf /tmp/*.deb
 
-# Install PrusaSlicer from source
-RUN wget https://github.com/prusa3d/PrusaSlicer/archive/refs/tags/version_2.9.0.zip -O PrusaSlicer.zip && \
-    unzip PrusaSlicer.zip && rm PrusaSlicer.zip && \
-    cd PrusaSlicer-version_2.9.0/deps && \
-    mkdir build && cd build && \
-    cmake .. -DDEP_WX_GTK3=ON && make && \
-    cd ../.. && \
-    mkdir build && cd build && \
-    cmake .. -DSLIC3R_STATIC=1 -DSLIC3R_GTK=3 -DSLIC3R_PCH=OFF -DCMAKE_PREFIX_PATH=$(pwd)/../deps/build/destdir/usr/local && \
-    make -j4 && \
-    cd ../.. && \
-    rm -rf PrusaSlicer-version_2.9.0/deps/build PrusaSlicer-version_2.9.0/build/tests
+    # # Install PrusaSlicer from source
+WORKDIR /slic3r
+RUN latestSlic3r=$(curl -SsL https://api.github.com/repos/prusa3d/PrusaSlicer/releases/latest | jq -r '.zipball_url') \
+    && wget ${latestSlic3r} -O /tmp/PrusaSlicer.zip \
+    && unzip /tmp/PrusaSlicer.zip -d /tmp/extracted \
+    && mv /tmp/extracted/* ./PrusaSlicer \
+    && rm /tmp/PrusaSlicer.zip && rmdir /tmp/extracted \
+    && cd PrusaSlicer/deps \
+    && mkdir build && cd build \
+    && cmake .. -DDEP_WX_GTK3=ON && make \
+    && cd ../.. \
+    && mkdir build && cd build \
+    && cmake .. -DSLIC3R_STATIC=1 -DSLIC3R_GTK=3 -DSLIC3R_PCH=OFF -DCMAKE_PREFIX_PATH=$(pwd)/../deps/build/destdir/usr/local \
+    && make -j4 \
+    && cd ../.. \
+    && rm -rf PrusaSlicer/deps/build PrusaSlicer/build/tests
 
 RUN groupadd slic3r \
     && useradd -g slic3r --create-home --home-dir /home/slic3r slic3r \
-    && mkdir -p /slic3r \
     && mkdir -p /configs \
     && mkdir -p /prints/ \
     && chown -R slic3r:slic3r /slic3r/ /home/slic3r/ /prints/ /configs/ \
